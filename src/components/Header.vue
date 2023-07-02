@@ -14,11 +14,13 @@
     <button
       @click="pageBack()"
       class="navButton button"
+      :disabled="!state.backEnabled"
       :class="{'enabledButton': state.backEnabled, 'disabledButton' : !state.backEnabled}"
      >&larr;</button>
     Page {{state.curPage}} of {{state.totalPages}}
     <button
       @click="pageFwd()"
+      :disabled="!state.fwdEnabled"
       class="navButton button"
       :class="{'enabledButton': state.fwdEnabled, 'disabledButton': !state.fwdEnabled}"
      >&rarr;</button>
@@ -77,7 +79,7 @@ export default {
     color: #000;
     font-weight:900;
     font-size: .6em;
-    margin-top:9px;
+    margin-top:8px;
   }
   .disabledButton{
     background: #8888!important;

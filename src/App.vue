@@ -31,6 +31,8 @@ export default {
         viewPhoto: null,
         viewCart: null,
         closeModals: null,
+        LZ2, null,
+        LZ2E: null,
         flashStatus: null,
         addToCart: null,
         addItem: null,
@@ -65,6 +67,84 @@ export default {
         }
       })
     },
+    setCookie(pair){
+      let oneYearFromNow = (new Date(Date.now()+1000*60*60*24*365))
+      document.cookie = `${pair.split('=')[0]}=${btoa(pair.split('=')[1]).replaceAll('=','')}; expires=${oneYearFromNow}; path=/`
+    },
+    fetchCookie(token){
+      let l=document.cookie.split(';').filter(v=>token==v.split('=')[0].trim())
+      return l.length ? atob(l[0].split('=')[1]) : ''
+    },
+    deleteCookie(token){
+      oneYearFromNow = (new Date(Date.now()-1000*60*60*24*365))
+      document.cookie = `${token}=; expires=${oneYearFromNow}`
+    },
+    LZ2(str) => {
+      str = str.replaceAll('\\','\\\\')
+      let last, end = false, ostr=str
+      for(let N=0;!end && N<10;N++){
+        let maxBuffer = 16-N
+        let l=str.split('')
+        let mind, test
+        let out=[]
+        for(j=0; j<l.length;){
+          if(l[j].charCodeAt(0)==255){
+              for(let m=0;m<3;++m) out=[...out, [1,j+m]]
+              j+=3
+          }else{
+              let mind=-1, pos=[]
+              for(let k=1;k<Math.min(maxBuffer,l.length/2);k++){
+                for(g=j;g<l.length-j-k;g++){
+                  let test1 = ''
+                  let test2 = ''
+                  for(let i=0; i<k; i++){
+                    test1 += l[j+i]
+                    test2 += l[j+i+k+g]
+                  }
+                  if(test1.indexOf(String.fromCharCode(255))==-1 && test1==test2 && k>mind){
+                    mind=k
+                    pos=[j,k,k+g+j]
+                  }
+                }
+              }
+              if(pos.length && pos[1]>1){
+                out=[...out, [pos[1], pos[2]]]
+              } else {
+                out=[...out, [1,j]]
+              }
+              j+=pos.length&&pos[1]>1?pos[1]:1
+            }
+          }
+          let f=''
+          out.map((v,i)=>{
+            f+=v[0]>1?String.fromCharCode(255)+String.fromCharCode(l.length-v[1])+String.fromCharCode(v[0]):l[v[1]]
+          })
+        str = f
+        if(N){
+          if(str.length>=last.length){
+            str = last
+            end = true
+          }
+        }
+        last = str
+      }
+      return str
+    },
+    LZ2E(data) => {
+      let ret = '', cur, ofx, ofy
+      data=data.split('')
+      for(let i=0;i<data.length;++i){
+        let cur = data[data.length-i-1]
+        ret = cur + ret
+        if(i>2 && cur == String.fromCharCode(255)){
+          ofx = ret[2].charCodeAt(0)
+          ofy = ret[1].charCodeAt(0)
+          ret=ret.split('').filter((v,i)=>i>2).join('')
+          for(let j=ofx; j--;) ret = ret[ret.length-ofy+j] + ret
+        }
+      }
+      return ret.replaceAll('\\\\', '\\')
+    },
     removeRow(id){
       this.state.cart = this.state.cart.filter(v=>v.id != id)
       this.closeModals()
@@ -76,6 +156,7 @@ export default {
         this.viewCart()
       })
       this.flashStatus('row removed')
+      this.updateCartCookie()
     },
     removeItem(id){
       let cull = false
@@ -101,6 +182,7 @@ export default {
         this.viewCart()
       })
       this.flashStatus('item removed')
+      this.updateCartCookie()
     },
     addToCart(id){
       let existingItem = false
@@ -118,6 +200,7 @@ export default {
         this.state.cart.push(newEl)
       }
       this.flashStatus('item added to cart!')
+      this.updateCartCookie()
     },
     flashStatus(statusMessage){
       let el = document.createElement('div')
@@ -138,6 +221,10 @@ export default {
       if((+this.state.totalPages) && (+this.state.curPage)<(+this.state.totalPages)) this.state.fwdEnabled = true
       if((+this.state.curPage) > 1) this.state.backEnabled = true
     },
+    updateCartCookie(){
+      cartData = this.LZ2(JSON.stringify(this.state.cart))
+      this.setCookie(`cart=${cartData}`)
+    },
     addItem(id){
       this.state.cart.map(v=>{
         if(v.id == id){
@@ -149,7 +236,8 @@ export default {
       this.$nextTick(()=>{
         this.viewCart()
       })
-      this.flashStatus('item added')      
+      this.flashStatus('item added')
+      this.updateCartCookie()
     },
     viewPhoto(photo, andThen=''){
       this.closeModals()
@@ -180,18 +268,22 @@ export default {
     }
   },
   mounted(){
+    let l
     document.querySelectorAll('.backgroundImage')[0].style.backgroundImage = 'url(lotus.jpg)'
-    this.state.loadFlowers = this.loadFlowers
-    this.state.viewPhoto = this.viewPhoto
-    this.state.cartTotalItems = this.cartTotalItems
-    this.state.closeModals = this.closeModals
-    this.state.removeRow = this.removeRow
+    this.state.LZ2 = this.LZ2
+    this.state.LZ2E = this.LZ2E
     this.state.addItem = this.addItem
     this.state.viewCart = this.viewCart
     this.state.checkNav = this.checkNav
-    this.state.flashStatus = this.flashStatus
     this.state.addToCart = this.addToCart
+    this.state.viewPhoto = this.viewPhoto
+    this.state.removeRow = this.removeRow
     this.state.removeItem = this.removeItem
+    this.state.closeModals = this.closeModals
+    this.state.loadFlowers = this.loadFlowers
+    this.state.flashStatus = this.flashStatus
+    this.state.cartTotalItems = this.cartTotalItems
+    this.state.cart = typeof (l=JSON.parse(this.LZ2E(this.fetchCookie('cart')))) == 'Array' ? l : []
     this.loadFlowers()
   }
 }
