@@ -6,6 +6,6 @@ cp /home/whitehotrobot/cobbmtn/dist/. /home/whitehotrobot/cobbmountain_flowers/.
 cd /home/whitehotrobot/cobbmountain_flowers
 git add .
 git commit -m 'sync'
-echo "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"
+cat ~/github_token
 git push origin main
 cd /home/whitehotrobot/cobbmtn

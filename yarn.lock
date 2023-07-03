@@ -5382,16 +5382,7 @@ vue-hot-reload-api@^2.3.0:
   resolved "https://registry.npmmirror.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
   integrity sha512-BXq3jwIagosjgNVae6tkHzzIk6a8MHFtzAdwhnV5VlvPTFxDCvIttgSiHWjdGoTJvXtmRu5HacExfdarRcFhog==
 
-vue-loader@^17.0.0:
-  version "17.2.2"
-  resolved "https://registry.npmmirror.com/vue-loader/-/vue-loader-17.2.2.tgz#96148eb70c1365cc8c5bab4274923596811c79df"
-  integrity sha512-aqNvKJvnz2A/6VWeJZodAo8XLoAlVwBv+2Z6dama+LHsAF+P/xijQ+OfWrxIs0wcGSJduvdzvTuATzXbNKkpiw==
-  dependencies:
-    chalk "^4.1.0"
-    hash-sum "^2.0.0"
-    watchpack "^2.4.0"
-
-vue-loader@^17.2.2:
+vue-loader@^17.0.0, vue-loader@^17.2.2:
   version "17.2.2"
   resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-17.2.2.tgz#96148eb70c1365cc8c5bab4274923596811c79df"
   integrity sha512-aqNvKJvnz2A/6VWeJZodAo8XLoAlVwBv+2Z6dama+LHsAF+P/xijQ+OfWrxIs0wcGSJduvdzvTuATzXbNKkpiw==

@@ -1,13 +1,16 @@
 <template>
   <div class="modal" :state="state" ref="modalDiv" tabindex="0" @click="state.closeModals(modalData.andThen)">
     <button class="cancelButton button" @click="state.closeModals(modalData.andThen)">close [esc]</button>
+  <Cart :state="state" v-if="type=='cart'" />
   </div>
 </template>
 
 <script>
+import Cart from './Cart.vue'
 
 export default {
   name: 'Modal',
+  components: { Cart },
   props: [ 'state', 'modalData'],
   data(){
     return {
@@ -44,60 +47,9 @@ export default {
         this.$refs.modalDiv.appendChild(el)
         el.focus()
       break
+      case 'checkout':
+      break
       case 'cart':
-        el = document.createElement('div')
-        el.className = "cart"
-        el.style.background = '#0d1b2e7d'
-        el.style.position = 'fixed'
-        el.style.height = '100vh'
-        el.style.overflow = 'auto'
-        el.style.width = '100vw'
-        el.style.minHeight = 'calc(100vh - 0px)'
-        el.style.borderRadius = '2px'
-        el.onclick = e => {
-          e.preventDefault()
-          e.stopPropagation()
-        }
-        let markup
-        if(this.state.cart.length){
-          markup = `
-            <table class="cartTable">
-              <tr>
-                <th class="cartTH">item name</th>
-                <th class="cartTH"></th>
-                <th class="cartTH">quantity</th>
-                <th class="cartTH">price each</th>
-                <th class="cartTH">line total</th>
-              </tr>
-          `
-          let grandTotal = 0
-          this.state.cart.map(v=>{
-            markup += `
-              <tr>
-                <td class="cartTD">${v.name}</td>
-                <td class="cartTD"><img onclick="showPhoto('${v.photo}')" class="cartThumb" src="${v.photo}"></td>
-                <td class="cartTD">${v.quantity}</td>
-                <td class="cartTD">${'$'+(+v.price/100).toLocaleString()}</td>
-                <td class="cartTD">${'$'+(+v.lineTotal).toLocaleString()}</td>
-                <td class="cartTD">
-                  <span title="add 1 to quantity" class="addItem cartButtons" onclick="addItem(${v.id})">add 1</span><br>
-                  <span title="remove 1 from quantity. if there is only one, the row is removed..." class="removeItem cartButtons" onclick="removeItem(${v.id})">remove 1</span><br>
-                  <span title="remove all of this item.. the whole row is removed..." class="removeItem cartButtons" onclick="removeRow(${v.id})">remove row</span>
-                </td>
-              </tr>
-            `
-            grandTotal += (+v.lineTotal)
-          })
-          markup += '</table><br><br>'
-          let GTtext
-          markup = '<br><br><br>' + (GTtext = `<div class="grandTotal">GRAND TOTAL: $` + (+grandTotal).toLocaleString() + `</div>`) + markup + GTtext
-        }else{
-          markup = '<div style="position:absolute;left:50%;top:50%;font-size:2em;transform:translate(-50%,-50%);">nothing in your cart yet!</div>'
-        }
-        markup += '<br>'.repeat(3)
-        el.innerHTML = markup
-        this.$refs.modalDiv.appendChild(el)
-        el.focus()
       break
     }
     this.$refs.modalDiv.onkeydown = e=>{
@@ -119,47 +71,6 @@ export default {
     z-index: 1000;
     background: linear-gradient(45deg, #201d,#400);
   }
-  .cartButtons{
-    display: inline-block;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 10px;
-    font-size: 1em;
-    margin: 5px;
-    min-width: 130px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-  }
-  .addItem{
-    background: #042;
-    color: #4f8;
-  }
-  .removeItem{
-    background: #400;
-    color: #f00;
-  }
-  .cartTable{
-    border-collapse: collapse;
-    margin-top: 50px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .cartTD{
-    border: 1px solid #fff4;
-    min-width: 100px;
-    padding-left: 10px;
-    padding-right: 10px;
-    font-size: 1.1em;
-    text-align: center;
-  }
-  .cartTH{
-    border: 1px solid #fff8;
-  }
-  .grandTotal{
-    color: #fff;
-    font-size: 2em;
-    text-align: center;
-  }
   .photo{
     position: absolute;
     left: 50%;
@@ -170,13 +81,6 @@ export default {
     background-size: contain;
     background-position: center center;
     background-repeat: no-repeat;
-  }
-  .cartThumb{
-    width: 150px;
-    cursor: pointer;
-    border-radius: 5px;
-    display: inline-block;
-    vertical-align: top;
   }
   .cancelButton{
     background: #400 !important;

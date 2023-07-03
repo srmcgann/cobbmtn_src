@@ -35,6 +35,7 @@ export default {
         LZ2E: null,
         flashStatus: null,
         ip: '',
+        checkout: null,
         addToCart: null,
         addItem: null,
         removeItem: null,
@@ -43,6 +44,7 @@ export default {
         modalData: [],
         cart: [],
         cartTotalItems: null,
+        grandTotal: 0,
         backEnabled: false,
         fwdEnabled: false,
         checkNav: null,
@@ -85,10 +87,20 @@ export default {
         body: JSON.stringify(sendData),
       }).then(json=>json.json()).then(data=>{
         if(data[0]){
-          console.log('cart updated successfully!')
+          this.state.grandTotal = 0
+          this.state.cart.map(v=>{
+            this.state.grandTotal += v.lineTotal
+          })
         } else {
           console.log('error!')
         }
+      })
+    },
+    checkout(){
+      this.closeModals()
+      this.state.modalData = {type: 'checkout'}
+      this.$nextTick(()=>{
+        this.showModal = true 
       })
     },
     async getUserIP(){
@@ -315,6 +327,7 @@ export default {
     this.state.addItem = this.addItem
     this.state.viewCart = this.viewCart
     this.state.checkNav = this.checkNav
+    this.state.checkout = this.checkout
     this.state.addToCart = this.addToCart
     this.state.viewPhoto = this.viewPhoto
     this.state.removeRow = this.removeRow
