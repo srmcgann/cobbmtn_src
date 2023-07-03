@@ -31,9 +31,10 @@ export default {
         viewPhoto: null,
         viewCart: null,
         closeModals: null,
-        LZ2, null,
+        LZ2: null,
         LZ2E: null,
         flashStatus: null,
+        ip: '',
         addToCart: null,
         addItem: null,
         removeItem: null,
@@ -71,6 +72,49 @@ export default {
       let oneYearFromNow = (new Date(Date.now()+1000*60*60*24*365))
       document.cookie = `${pair.split('=')[0]}=${btoa(pair.split('=')[1]).replaceAll('=','')}; expires=${oneYearFromNow}; path=/`
     },
+    updateCart(){
+      let sendData = {
+        ip: this.state.ip,
+        cart: this.state.cart
+      }
+      fetch(this.state.baseURL + 'updateCart.php',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sendData),
+      }).then(json=>json.json()).then(data=>{
+        if(data[0]){
+          console.log('cart updated successfully!')
+        } else {
+          console.log('error!')
+        }
+      })
+    },
+    async getUserIP(){
+      await fetch('https://api.seeip.org/jsonip')
+        .then(json=>json.json())
+        .then(data=>{
+          this.state.ip = data.ip
+          this.fetchCartMaybe()
+        })
+    },
+    async fetchCartMaybe(){
+      let sendData = {ip: this.state.ip}
+      await fetch(this.state.baseURL + 'fetchCart.php',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sendData),
+      }).then(json=>json.json()).then(data=>{
+        if(data[0]){
+          console.log('retrieved cart for id\'d session.')
+          this.state.cart = data[1] ? JSON.parse(data[1].cart) : []
+          this.viewCart()
+        }
+      })
+    },
     fetchCookie(token){
       let l=document.cookie.split(';').filter(v=>token==v.split('=')[0].trim())
       return l.length ? atob(l[0].split('=')[1]) : ''
@@ -79,7 +123,7 @@ export default {
       oneYearFromNow = (new Date(Date.now()-1000*60*60*24*365))
       document.cookie = `${token}=; expires=${oneYearFromNow}`
     },
-    LZ2(str) => {
+    LZ2(str){
       str = str.replaceAll('\\','\\\\')
       let last, end = false, ostr=str
       for(let N=0;!end && N<10;N++){
@@ -87,38 +131,38 @@ export default {
         let l=str.split('')
         let mind, test
         let out=[]
-        for(j=0; j<l.length;){
+        for(let j=0; j<l.length;){
           if(l[j].charCodeAt(0)==255){
-              for(let m=0;m<3;++m) out=[...out, [1,j+m]]
-              j+=3
+            for(let m=0;m<3;++m) out=[...out, [1,j+m]]
+            j+=3
           }else{
-              let mind=-1, pos=[]
-              for(let k=1;k<Math.min(maxBuffer,l.length/2);k++){
-                for(g=j;g<l.length-j-k;g++){
-                  let test1 = ''
-                  let test2 = ''
-                  for(let i=0; i<k; i++){
-                    test1 += l[j+i]
-                    test2 += l[j+i+k+g]
-                  }
-                  if(test1.indexOf(String.fromCharCode(255))==-1 && test1==test2 && k>mind){
-                    mind=k
-                    pos=[j,k,k+g+j]
-                  }
+            let mind=-1, pos=[]
+            for(let k=1;k<Math.min(maxBuffer,l.length/2);k++){
+              for(let g=j;g<l.length-j-k;g++){
+                let test1 = ''
+                let test2 = ''
+                for(let i=0; i<k; i++){
+                  test1 += l[j+i]
+                  test2 += l[j+i+k+g]
+                }
+                if(test1.indexOf(String.fromCharCode(255))==-1 && test1==test2 && k>mind){
+                  mind=k
+                  pos=[j,k,k+g+j]
                 }
               }
-              if(pos.length && pos[1]>1){
-                out=[...out, [pos[1], pos[2]]]
-              } else {
-                out=[...out, [1,j]]
-              }
-              j+=pos.length&&pos[1]>1?pos[1]:1
             }
+            if(pos.length && pos[1]>1){
+              out=[...out, [pos[1], pos[2]]]
+            } else {
+              out=[...out, [1,j]]
+            }
+            j+=pos.length&&pos[1]>1?pos[1]:1
           }
-          let f=''
-          out.map((v,i)=>{
-            f+=v[0]>1?String.fromCharCode(255)+String.fromCharCode(l.length-v[1])+String.fromCharCode(v[0]):l[v[1]]
-          })
+        }
+        let f=''
+        out.map((v,i)=>{
+          f+=v[0]>1?String.fromCharCode(255)+String.fromCharCode(l.length-v[1])+String.fromCharCode(v[0]):l[v[1]]
+        })
         str = f
         if(N){
           if(str.length>=last.length){
@@ -130,7 +174,7 @@ export default {
       }
       return str
     },
-    LZ2E(data) => {
+    LZ2E(data){
       let ret = '', cur, ofx, ofy
       data=data.split('')
       for(let i=0;i<data.length;++i){
@@ -156,7 +200,7 @@ export default {
         this.viewCart()
       })
       this.flashStatus('row removed')
-      this.updateCartCookie()
+      this.updateCart()
     },
     removeItem(id){
       let cull = false
@@ -182,7 +226,7 @@ export default {
         this.viewCart()
       })
       this.flashStatus('item removed')
-      this.updateCartCookie()
+      this.updateCart()
     },
     addToCart(id){
       let existingItem = false
@@ -200,7 +244,7 @@ export default {
         this.state.cart.push(newEl)
       }
       this.flashStatus('item added to cart!')
-      this.updateCartCookie()
+      this.updateCart()
     },
     flashStatus(statusMessage){
       let el = document.createElement('div')
@@ -221,10 +265,6 @@ export default {
       if((+this.state.totalPages) && (+this.state.curPage)<(+this.state.totalPages)) this.state.fwdEnabled = true
       if((+this.state.curPage) > 1) this.state.backEnabled = true
     },
-    updateCartCookie(){
-      cartData = this.LZ2(JSON.stringify(this.state.cart))
-      this.setCookie(`cart=${cartData}`)
-    },
     addItem(id){
       this.state.cart.map(v=>{
         if(v.id == id){
@@ -237,7 +277,7 @@ export default {
         this.viewCart()
       })
       this.flashStatus('item added')
-      this.updateCartCookie()
+      this.updateCart()
     },
     viewPhoto(photo, andThen=''){
       this.closeModals()
@@ -267,7 +307,7 @@ export default {
       return ct
     }
   },
-  mounted(){
+  async mounted(){
     let l
     document.querySelectorAll('.backgroundImage')[0].style.backgroundImage = 'url(lotus.jpg)'
     this.state.LZ2 = this.LZ2
@@ -283,7 +323,7 @@ export default {
     this.state.loadFlowers = this.loadFlowers
     this.state.flashStatus = this.flashStatus
     this.state.cartTotalItems = this.cartTotalItems
-    this.state.cart = typeof (l=JSON.parse(this.LZ2E(this.fetchCookie('cart')))) == 'Array' ? l : []
+    await this.getUserIP()
     this.loadFlowers()
   }
 }
@@ -329,9 +369,9 @@ export default {
   }
   .status{
     overflow: hidden;
-    opacity: 1;
+    opacity: .5;
     text-align: center;
-    transition: opacity 1s;
+    transition: opacity 2s;
     top: 0;
     left: 0;
     position: fixed;
@@ -340,7 +380,7 @@ export default {
     z-index: 10000;
     padding-top: 40vh;
     font-size: 64px;
-    background: #123c;
+    background: #40fc;
     color: #8f0;
   }
   .button{

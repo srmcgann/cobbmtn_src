@@ -47,11 +47,12 @@ export default {
       case 'cart':
         el = document.createElement('div')
         el.className = "cart"
-        el.style.background = '#001e'
+        el.style.background = '#0d1b2e7d'
         el.style.position = 'fixed'
-        el.style.width = '100%'
+        el.style.height = '100vh'
+        el.style.overflow = 'auto'
+        el.style.width = '100vw'
         el.style.minHeight = 'calc(100vh - 0px)'
-        //el.style.border = '5px solid #402'
         el.style.borderRadius = '2px'
         el.onclick = e => {
           e.preventDefault()
@@ -88,13 +89,8 @@ export default {
             grandTotal += (+v.lineTotal)
           })
           markup += '</table><br><br>'
-          markup += `<div class="grandTotal">GRAND TOTAL: $` + (+grandTotal).toLocaleString() + `</div>
-<pre>
-${JSON.stringify(this.state.cart)}<br><br><br>
-${btoa(JSON.stringify(this.state.cart))}<br><br><br>
-size: ${btoa(JSON.stringify(this.state.cart)).length}
-</pre>
-`
+          let GTtext
+          markup = '<br><br><br>' + (GTtext = `<div class="grandTotal">GRAND TOTAL: $` + (+grandTotal).toLocaleString() + `</div>`) + markup + GTtext
         }else{
           markup = '<div style="position:absolute;left:50%;top:50%;font-size:2em;transform:translate(-50%,-50%);">nothing in your cart yet!</div>'
         }
@@ -118,6 +114,7 @@ size: ${btoa(JSON.stringify(this.state.cart)).length}
     top: 0;
     left: 0;
     width: 100vw;
+    overflow: auto;
     height: 100vh;
     z-index: 1000;
     background: linear-gradient(45deg, #201d,#400);
@@ -129,7 +126,7 @@ size: ${btoa(JSON.stringify(this.state.cart)).length}
     border-radius: 10px;
     font-size: 1em;
     margin: 5px;
-    min-width: 100px;
+    min-width: 130px;
     padding-top: 2px;
     padding-bottom: 2px;
   }
@@ -159,7 +156,7 @@ size: ${btoa(JSON.stringify(this.state.cart)).length}
     border: 1px solid #fff8;
   }
   .grandTotal{
-    color: #8ff;
+    color: #fff;
     font-size: 2em;
     text-align: center;
   }
@@ -183,9 +180,9 @@ size: ${btoa(JSON.stringify(this.state.cart)).length}
   }
   .cancelButton{
     background: #400 !important;
-    color: #f00 !important;
+    color: #f88 !important;
     z-index: 1000;
-    position: absolute;
+    position: fixed;
     top: 10px;
     left: 10px;
   }
