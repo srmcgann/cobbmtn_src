@@ -3,7 +3,7 @@
   <Header :state="state" />
   <Main :state="state" />
   <Footer :state="state" />
-  <Modal :state="state" :modalData="state.modalData" v-if="state.showModal" />
+  <Modal :state="state" v-if="state.showModal" />
 </template>
 
 <script>
@@ -38,9 +38,12 @@ export default {
         checkout: null,
         addToCart: null,
         addItem: null,
+        cardPayment: null,
+        paypalPayment: null,
         removeItem: null,
         showModal: false,
         removeRow: null,
+        refreshGrandTotal: null,
         modalData: [],
         cart: [],
         cartTotalItems: null,
@@ -74,6 +77,12 @@ export default {
       let oneYearFromNow = (new Date(Date.now()+1000*60*60*24*365))
       document.cookie = `${pair.split('=')[0]}=${btoa(pair.split('=')[1]).replaceAll('=','')}; expires=${oneYearFromNow}; path=/`
     },
+    refreshGrandTotal(){
+      this.state.grandTotal = 0
+      this.state.cart.map(v=>{
+        this.state.grandTotal += v.lineTotal
+      })
+    },
     updateCart(){
       let sendData = {
         ip: this.state.ip,
@@ -87,21 +96,18 @@ export default {
         body: JSON.stringify(sendData),
       }).then(json=>json.json()).then(data=>{
         if(data[0]){
-          this.state.grandTotal = 0
-          this.state.cart.map(v=>{
-            this.state.grandTotal += v.lineTotal
-          })
+          this.refreshGrandTotal()
         } else {
           console.log('error!')
         }
       })
     },
     checkout(){
-      this.closeModals()
-      this.state.modalData = {type: 'checkout'}
       this.$nextTick(()=>{
-        this.showModal = true 
+        this.state.modalData = {type: 'checkout', andThen: ''}
+        this.state.showModal = true
       })
+      console.log('checkout @App.vue...') 
     },
     async getUserIP(){
       await fetch('https://api.seeip.org/jsonip')
@@ -201,6 +207,12 @@ export default {
       }
       return ret.replaceAll('\\\\', '\\')
     },
+    cardPayment(){
+      console.log('card payment...')
+    },
+    paypalPayment(){
+      console.log('paypal payment')
+    },
     removeRow(id){
       this.state.cart = this.state.cart.filter(v=>v.id != id)
       this.closeModals()
@@ -299,6 +311,7 @@ export default {
       })
     },
     viewCart(){
+      this.refreshGrandTotal()
       this.state.modalData = {type: 'cart'}
       this.state.showModal = true
     },
@@ -332,10 +345,13 @@ export default {
     this.state.viewPhoto = this.viewPhoto
     this.state.removeRow = this.removeRow
     this.state.removeItem = this.removeItem
+    this.state.cardPayment = this.cardPayment
     this.state.closeModals = this.closeModals
     this.state.loadFlowers = this.loadFlowers
     this.state.flashStatus = this.flashStatus
+    this.state.paypalPayment = this.paypalPayment
     this.state.cartTotalItems = this.cartTotalItems
+    this.state.refreshGrandTotal = this.refreshGrandTotal
     await this.getUserIP()
     this.loadFlowers()
   }
@@ -388,10 +404,14 @@ export default {
     top: 0;
     left: 0;
     position: fixed;
-    width: 100vw;
-    height: 100vh;
+    width: calc(100vw - 200px);
+    min-width: 400px;
+    height: 120px;
+    top: 50vh;
+    padding-top:10px;
+    left: 50vw;
+    transform: translate(-50%, -50%);
     z-index: 10000;
-    padding-top: 40vh;
     font-size: 64px;
     background: #40fc;
     color: #8f0;

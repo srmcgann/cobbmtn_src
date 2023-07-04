@@ -1,17 +1,21 @@
 <template>
-  <div class="modal" :state="state" ref="modalDiv" tabindex="0" @click="state.closeModals(modalData.andThen)">
-    <button class="cancelButton button" @click="state.closeModals(modalData.andThen)">close [esc]</button>
-  <Cart :state="state" v-if="type=='cart'" />
+  <div class="modal" :state="state" ref="modalDiv" tabindex="0" @click="state.closeModals(state.modalData.andThen)">
+    <button class="cancelButton button" @click="state.closeModals(state.modalData.andThen)">close [esc]</button>
+  <Cart :state="state" v-if="state.modalData.type=='cart'" />
+  <Checkout :state="state" v-if="state.modalData.type=='checkout'" @click.stop=""/>
   </div>
 </template>
 
 <script>
 import Cart from './Cart.vue'
-
+import Checkout from './Checkout.vue'
 export default {
   name: 'Modal',
-  components: { Cart },
-  props: [ 'state', 'modalData'],
+  components: {
+    Cart,
+    Checkout
+  },
+  props: [ 'state'],
   data(){
     return {
       backEnabled: false,
@@ -22,38 +26,27 @@ export default {
   },
   mounted(){
     document.querySelector('html').style.overflow = 'hidden'
-    window.addItem = id =>{
-      this.state.addItem(id)
-    }
-    window.removeItem = id => {
-      this.state.removeItem(id)
-    }
-    window.removeRow = id => {
-      this.state.removeRow(id)
-    }
-    window.showPhoto = photo => {
-      this.state.viewPhoto(photo, 'viewCart')
-    }
     let el
-    switch(this.modalData.type){
+    switch(this.state.modalData.type){
       case 'photo':
         el = document.createElement('div')
         el.className = "photo"
-        el.style.backgroundImage = `url(${this.modalData.photo})`
+        el.style.backgroundImage = `url(${this.state.modalData.photo})`
         el.tabindex = 1
         el.onkeydown = e =>{
-          if(e.keyCode == 27) this.state.closeModals(this.modalData.andThen)
+          if(e.keyCode == 27) this.state.closeModals(this.state.modalData.andThen)
         }
         this.$refs.modalDiv.appendChild(el)
         el.focus()
       break
       case 'checkout':
+      console.log('checkout type modal activated')
       break
       case 'cart':
       break
     }
     this.$refs.modalDiv.onkeydown = e=>{
-      if(e.keyCode == 27) this.state.closeModals(this.modalData.andThen)
+      if(e.keyCode == 27) this.state.closeModals(this.state.modalData.andThen)
     }
     this.$refs.modalDiv.focus()
   }
@@ -85,7 +78,7 @@ export default {
   .cancelButton{
     background: #400 !important;
     color: #f88 !important;
-    z-index: 1000;
+    z-index: 10000;
     position: fixed;
     top: 10px;
     left: 10px;
