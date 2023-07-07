@@ -7,8 +7,11 @@
     "build": "vue-cli-service build; ./push.sh"
   },
   "dependencies": {
+    "bootstrap": "4.3.0",
     "core-js": "^3.8.3",
     "html-webpack-plugin": "^5.5.3",
+    "jquery": "^3.7.0",
+    "popper.js": "^1.16.1",
     "vue": "^3.2.13",
     "vue-loader": "^17.2.2",
     "vue-template-compiler": "^2.7.14"

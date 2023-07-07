@@ -38,14 +38,13 @@ export default {
         checkout: null,
         addToCart: null,
         addItem: null,
-        cardPayment: null,
-        paypalPayment: null,
         removeItem: null,
         showModal: false,
         removeRow: null,
         refreshGrandTotal: null,
         modalData: [],
         cart: [],
+        paymentMethod: '',
         cartTotalItems: null,
         grandTotal: 0,
         backEnabled: false,
@@ -129,7 +128,7 @@ export default {
         if(data[0]){
           console.log('retrieved cart for id\'d session.')
           this.state.cart = data[1] ? JSON.parse(data[1].cart) : []
-          this.viewCart()
+          if(this.state.cart.length) this.viewCart()
         }
       })
     },
@@ -206,12 +205,6 @@ export default {
         }
       }
       return ret.replaceAll('\\\\', '\\')
-    },
-    cardPayment(){
-      console.log('card payment...')
-    },
-    paypalPayment(){
-      console.log('paypal payment')
     },
     removeRow(id){
       this.state.cart = this.state.cart.filter(v=>v.id != id)
@@ -349,7 +342,6 @@ export default {
     this.state.closeModals = this.closeModals
     this.state.loadFlowers = this.loadFlowers
     this.state.flashStatus = this.flashStatus
-    this.state.paypalPayment = this.paypalPayment
     this.state.cartTotalItems = this.cartTotalItems
     this.state.refreshGrandTotal = this.refreshGrandTotal
     await this.getUserIP()
@@ -398,7 +390,7 @@ export default {
   }
   .status{
     overflow: hidden;
-    opacity: .5;
+    opacity: 2.5;
     text-align: center;
     transition: opacity 2s;
     top: 0;

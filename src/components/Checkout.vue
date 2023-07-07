@@ -4,8 +4,18 @@
     <div class="grandTotal" v-html="GTText()"></div>
     <br><br><br><br>
     choose a payment method<br><br>
-    <button class="ccbutton paymentButtons" style="background-image: url(creditcards.jpg)" @click="state.cardPayment()"></button>
-    <button class="ppbutton paymentButtons" style="background-image: url(paypal.png);" @click="state.paypalPayment()"></button>
+    <button class="ccbutton paymentButtons" style="background-image: url(creditcards.jpg)" @click="state.paymentMethod='cc'"></button>
+    <button class="ppbutton paymentButtons" style="background-image: url(paypal.png);" @click="state.paymentMethod='paypal'"></button><br><br>
+    <iframe
+      v-if="state.paymentMethod == 'paypal'"
+      class="paymentForm"
+      :src="state.baseURL + 'paypalForm.php'"
+    ></iframe>
+    <iframe
+      v-if="state.paymentMethod == 'cc'"
+      class="paymentForm"
+      :src="state.baseURL + 'ccForm.php'"
+    ></iframe>
   </div>
 </template>
 
@@ -42,6 +52,13 @@ export default {
     font-size: 2em;
     text-align: center;
   }
+  .paymentForm{
+    border: none;
+    width: calc(100vw - 100px);
+    min-height: 630px;
+    background: none;
+    margin-bottom: 100px;
+  }
   .paymentButtons{
     background-position: center center;
     background-repeat: no-repeat;
@@ -59,4 +76,5 @@ export default {
     width: 135px;
     height: 135px;
   }
+
 </style>
